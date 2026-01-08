@@ -168,3 +168,89 @@ plt.xticks(rotation=0)
 plt.legend(title='Menstrual Phase')
 plt.tight_layout()
 plt.show()
+
+from scipy.stats import f_oneway
+
+unique_phases = df['phase'].unique()
+
+print("ANOVA Test for LH levels across Menstrual Phases:")
+lh_groups = [df['lh'][df['phase'] == phase] for phase in unique_phases]
+f_stat_lh, p_value_lh = f_oneway(*lh_groups)
+print(f"  F-statistic: {f_stat_lh:.2f}")
+print(f"  P-value: {p_value_lh:.3e}")
+
+if p_value_lh < 0.05:
+    print("  Conclusion: There are statistically significant differences in mean LH levels across menstrual phases (p < 0.05).")
+else:
+    print("  Conclusion: There are no statistically significant differences in mean LH levels across menstrual phases (p >= 0.05).")
+
+print("\nANOVA Test for Estrogen levels across Menstrual Phases:")
+estrogen_groups = [df['estrogen'][df['phase'] == phase] for phase in unique_phases]
+f_stat_estrogen, p_value_estrogen = f_oneway(*estrogen_groups)
+print(f"  F-statistic: {f_stat_estrogen:.2f}")
+print(f"  P-value: {p_value_estrogen:.3e}")
+
+if p_value_estrogen < 0.05:
+    print("  Conclusion: There are statistically significant differences in mean Estrogen levels across menstrual phases (p < 0.05).")
+else:
+    print("  Conclusion: There are no statistically significant differences in mean Estrogen levels across menstrual phases (p >= 0.05).")
+
+from scipy.stats import chi2_contingency
+
+hormone_category_cols = ['lh_category', 'estrogen_category', 'hormone_imbalance_status']
+
+for col in hormone_category_cols:
+    print(f"\nChi-square Test for {col} and Menstrual Phase:")
+    contingency_table = pd.crosstab(df[col], df['phase'])
+    chi2, p_value, dof, expected = chi2_contingency(contingency_table)
+
+    print(f"  Chi-square statistic: {chi2:.2f}")
+    print(f"  P-value: {p_value:.3e}")
+
+    if p_value < 0.05:
+        print(f"  Conclusion: There is a statistically significant association between {col} and menstrual phase (p < 0.05).")
+    else:
+        print(f"  Conclusion: There is no statistically significant association between {col} and menstrual phase (p >= 0.05).")
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
+plt.figure(figsize=(14, 6))
+
+plt.subplot(1, 2, 1)
+sns.violinplot(x='phase', y='lh', data=df, palette='viridis', order=unique_phases)
+#plt.title('LH Levels Across Menstrual Phases (Violin Plot)')
+plt.xlabel('Menstrual Phase')
+plt.ylabel('LH Level')
+plt.xticks(rotation=45, ha='right')
+
+plt.subplot(1, 2, 2)
+sns.violinplot(x='phase', y='estrogen', data=df, palette='viridis', order=unique_phases)
+#plt.title('Estrogen Levels Across Menstrual Phases (Violin Plot)')
+plt.xlabel('Menstrual Phase')
+plt.ylabel('Estrogen Level')
+plt.xticks(rotation=45, ha='right')
+
+plt.tight_layout()
+plt.show()
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+hormone_category_cols = ['lh_category', 'estrogen_category', 'hormone_imbalance_status']
+unique_phases = df['phase'].unique()
+
+for col in hormone_category_cols:
+    plt.figure(figsize=(12, 6))
+    sns.countplot(data=df, x='phase', hue=col, palette='viridis', order=unique_phases)
+    plt.xlabel('Menstrual Phase')
+    plt.ylabel('Count')
+    plt.xticks(rotation=45, ha='right')
+    plt.title(f'Distribution of {col.replace("_", " ").title()} by Menstrual Phase') # Added title
+    if col == 'hormone_imbalance_status':
+        plt.legend(title=col.replace("_", " ").title(), bbox_to_anchor=(0.98, 0.98), loc='upper right', fontsize='xx-small')
+    else:
+        plt.legend(title=col.replace("_", " ").title(), bbox_to_anchor=(0.98, 0.98), loc='upper right')
+    plt.tight_layout()
+    plt.show()
